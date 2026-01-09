@@ -81,42 +81,43 @@ export const addToCart = (data,qty = 1,toast) =>
      };
 
 export const increaseCartQuantity = (data, toast, currentQuantity, setCurrentQuantity) =>
-  (dispatch, getState) => {
-    // Get the current cart state from Redux
-    const { cart } = getState().carts;
- 
-    // Find the product in the cart using its productId
-    const getProduct = cart.find(item => item.productId === data.productId);
- 
-    // If product is not found in the cart, stop and log a message
-    if (!getProduct) {
-      console.log("Product not in cart yet");
-      return;
-    }
- 
-    // Get the available stock of the product from backend
-    // Use 'stock' if available, otherwise use the 'quantity' property
-    const availableStock = getProduct.stock ?? getProduct.quantity;
- 
-    // Check if the current quantity in cart is less than available stock
-    if (availableStock > currentQuantity) {
-      // Increase the cart quantity by 1
-      const newQuantity = currentQuantity + 1;
- 
-      // Update the local state to reflect the new quantity immediately
-      setCurrentQuantity(newQuantity);
- 
-      // Dispatch an action to update the quantity in the Redux store
-      dispatch({
-        type: "ADD_CART",
-        payload: { ...getProduct, quantity: newQuantity },
-      });
- 
-      // Save the updated cart in localStorage for persistence
-      localStorage.setItem("cartItems", JSON.stringify(getState().carts.cart));
-    } else {
-      // If stock limit is reached, show an error message to the user
-      toast.error("Quantity reached available stock limit.");
+  async (dispatch, getState) => { // ✅ mark this async
+    try {
+      // Get the current cart state from Redux
+      const { cart } = getState().carts;
+
+      // Find the product in cart
+      const cartItem = cart.find(item => item.productId === data.productId);
+
+      if (!cartItem) {
+        console.log("Product not in cart yet");
+        return;
+      }
+
+      // ✅ Fetch product details from backend
+      const response = await api.get(`/public/products/${data.productId}`);
+      
+      const product = response.data; // if using axios
+
+      // ✅ Check available stock before increment
+      if (product.quantity > currentQuantity) {
+        const newQuantity = currentQuantity + 1;
+        setCurrentQuantity(newQuantity);
+
+        dispatch({
+          type: "ADD_CART",
+          payload: { ...cartItem, quantity: newQuantity },
+        });
+
+        // ✅ Update localStorage
+        localStorage.setItem("cartItems", JSON.stringify(getState().carts.cart));
+      } else {
+        toast.error("Quantity reached available stock limit.");
+      }
+
+    } catch (error) {
+      console.error("Failed to fetch product details:", error);
+      toast.error("Failed to update quantity. Please try again.");
     }
   };
 
@@ -300,4 +301,62 @@ export const createUserCart = (sendCartItems) => async (dispatch) => {
       payload: error?.response?.data?.message || "Failed to create cart items",
     });
   }
+};
+
+export const analyticsAction = () => async (dispatch,getState) => {
+     try {
+          dispatch({ type : "IS_FETCHING"});
+          const { data } = await api.get('/admin/app/analytics');
+          dispatch({ 
+               type: "FETCH_ANALYTICS", 
+               payload: data,
+          });
+          dispatch({ type: "IS_SUCCESS" });
+
+     } catch (error) {
+          dispatch({ 
+               type: "IS_ERROR",
+               payload: error?.response?.data?.message || "Failed to fetch analytics data" 
+           });
+     }
+};
+
+export const getOrdersForDashboard = (queryString, isAdmin) => async (dispatch) => {
+    try {
+        dispatch({ type: "IS_FETCHING" });
+        const endpoint = isAdmin ? "/admin/orders" : "/seller/orders";
+        const { data } = await api.get(`${endpoint}?${queryString}`);
+        dispatch({
+            type: "GET_ADMIN_ORDERS",
+            payload: data.content,
+            pageNumber: data.pageNumber,
+            pageSize: data.pageSize,
+            totalElements: data.totalElements,
+            totalPages: data.totalPages,
+            lastPage: data.lastPage,
+        });
+        dispatch({ type: "IS_SUCCESS" });
+    } catch (error) {
+        console.log(error);
+        dispatch({ 
+            type: "IS_ERROR",
+            payload: error?.response?.data?.message || "Failed to fetch orders data",
+         });
+    }
+};
+
+export const updateOrderStatusFromDashboard =
+     (orderId, orderStatus, toast, setLoader, isAdmin) => async (dispatch, getState) => {
+    try {
+        setLoader(true);
+        const endpoint = isAdmin ? "/admin/orders/" : "/seller/orders/";
+        const { data } = await api.put(`${endpoint}${orderId}/status`, { status: orderStatus});
+        toast.success(data.message || "Order updated successfully");
+        await dispatch(getOrdersForDashboard());
+    } catch (error) {
+        console.log(error);
+        toast.error(error?.response?.data?.message || "Internal Server Error");
+    } finally {
+        setLoader(false)
+    }
 };
