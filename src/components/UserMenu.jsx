@@ -26,6 +26,9 @@ const UserMenu = () => {
     const logOutHandler = () => {
         dispatch(logoutUser(navigate));
       };
+
+    const isAdmin = user && user?.roles?.includes("ROLE_ADMIN");
+    const endpoint = isAdmin ? "/admin" : "/seller";
   
     return (
       <div className='relative z-30'>
@@ -47,7 +50,7 @@ const UserMenu = () => {
           }}
         >
 
-          <Link to="/profile">
+          <Link to={endpoint}>
             <MenuItem className="flex gap-2" 
                 onClick={handleClose}>
                     <BiUser className='text-xl'/>
@@ -57,7 +60,7 @@ const UserMenu = () => {
             </MenuItem>
           </Link>
 
-          <Link to="/profile/orders">
+          <Link to={endpoint + '/orders'}>
             <MenuItem className="flex gap-2" 
                 onClick={handleClose}>
                     <FaShoppingCart className='text-xl'/>

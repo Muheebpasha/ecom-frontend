@@ -34,7 +34,8 @@ const UpdateOrderForm = ({ setOpen, selectedId, selectedItem, loader, setLoader}
             orderStatus,
             toast,
             setLoader,
-            isAdmin
+            isAdmin,
+            () => setOpen(false)   // ✅ close modal
         ));
     };
 

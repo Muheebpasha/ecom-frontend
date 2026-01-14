@@ -322,6 +322,7 @@ export const analyticsAction = () => async (dispatch,getState) => {
 };
 
 export const getOrdersForDashboard = (queryString, isAdmin) => async (dispatch) => {
+     
     try {
         dispatch({ type: "IS_FETCHING" });
         const endpoint = isAdmin ? "/admin/orders" : "/seller/orders";
@@ -346,17 +347,48 @@ export const getOrdersForDashboard = (queryString, isAdmin) => async (dispatch) 
 };
 
 export const updateOrderStatusFromDashboard =
-     (orderId, orderStatus, toast, setLoader, isAdmin) => async (dispatch, getState) => {
+     (orderId, orderStatus, toast, setLoader, isAdmin, onSuccess) => async (dispatch, getState) => {
     try {
         setLoader(true);
         const endpoint = isAdmin ? "/admin/orders/" : "/seller/orders/";
         const { data } = await api.put(`${endpoint}${orderId}/status`, { status: orderStatus});
         toast.success(data.message || "Order updated successfully");
-        await dispatch(getOrdersForDashboard());
+        
+        await dispatch(getOrdersForDashboard(`${endpoint}${orderId}`, isAdmin));
+         // ✅ CLOSE MODAL AFTER SUCCESS
+        onSuccess?.();
+
     } catch (error) {
         console.log(error);
         toast.error(error?.response?.data?.message || "Internal Server Error");
     } finally {
         setLoader(false)
     }
+};
+
+export const dashboardProductsAction = (queryString, isAdmin) => async (dispatch) => {
+     
+     try {
+          dispatch({type: "IS_FETCHING"});
+          const endpoint = isAdmin ? "/admin/products" : "/seller/products";
+          const {data} = await api.get(`${endpoint}?${queryString}`);
+          console.log("Dashboard Products API Response:", data);
+
+          dispatch({
+               type : "FETCH_PRODUCTS",
+               payload : data.content,
+               pageNumber : data.pageNumber,
+               pageSize : data.pageSize,
+               totalElements : data.totalElements,
+               totalPages : data.totalPages,
+               lastPage : data.lastPage
+          });
+          dispatch({ type : "IS_SUCCESS" });
+     } catch (error) {
+          console.log(error);
+          dispatch({
+               type : "IS_ERROR",
+               payload: error?.response?.data?.message || "Failed to fetch dashboard products",
+          });
+     }
 };

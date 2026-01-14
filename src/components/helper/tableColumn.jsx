@@ -9,7 +9,7 @@ export const adminProductTableColumn = (
 ) => [
   {
     disableColumnMenu: true,
-    sortable: false,
+    sortable: true,
     field: "id",
     headerName: "ID",
     minWidth: 200,
@@ -27,7 +27,7 @@ export const adminProductTableColumn = (
     align: "center",
     width: 260,
     editable: false,
-    sortable: false,
+    sortable: true,
     headerAlign: "center",
     headerClassName: "text-black font-semibold text-center border ",
     cellClassName: "text-slate-700 font-normal border text-center",

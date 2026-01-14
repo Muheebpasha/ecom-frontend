@@ -53,9 +53,10 @@ function OrderTable({adminOrder,pagination}) {
                columns={adminOrderTableColumn(handleEdit)}
                initialState={{
                     pagination: {
-                    paginationModel: {
-                    pageSize: 5,
-                    },
+                         paginationModel: {
+                              pageSize: pagination.pageSize || 10,
+                              page: currentPage - 1
+                         },
                     },
                }}
                onPaginationModelChange={handlePaginationChange}
@@ -64,9 +65,9 @@ function OrderTable({adminOrder,pagination}) {
                pageSizeOptions={[pagination?.pageSize || 10]}
                pagination
                paginationOptions={{
-               showFirstButton: true,
-               showLastButton: true,
-               hideNextButton: currentPage === pagination?.totalPages,
+                    showFirstButton: true,
+                    showLastButton: true,
+                    hideNextButton: currentPage === pagination?.totalPages,
                }}
           />
      </div>
