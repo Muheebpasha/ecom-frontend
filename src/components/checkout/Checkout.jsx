@@ -9,6 +9,7 @@ import Skeleton from "../shared/Skeleton";
 import PaymentMethod from "./PaymentMethod";
 import OrderSummary from "./OrderSummary";
 import PaypalPayment from "./PaypalPayment";
+import StripePayment from "./StripePayment";
 
 const Checkout = () => {
   const [activeStep, setActiveStep] = useState(0);
@@ -75,14 +76,13 @@ const Checkout = () => {
             />
           )}
           {activeStep === 3 && (
-            <div className="flex flex-col items-center justify-center py-16 text-center">
-              <p className="text-2xl font-semibold text-gray-800 mb-3">
-                {paymentMethod === "Stripe"
-                  ? "Stripe Payment Gateway"
-                  : <PaypalPayment />}
-              </p>
+            <div className="text-2xl font-semibold text-gray-800 mb-3">
+              {paymentMethod === "Stripe"
+                ? <StripePayment />
+                : <PaypalPayment />}
             </div>
           )}
+
         </div>
       )}
 

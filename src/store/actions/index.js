@@ -384,6 +384,7 @@ export const dashboardProductsAction = (queryString, isAdmin) => async (dispatch
                lastPage : data.lastPage
           });
           dispatch({ type : "IS_SUCCESS" });
+          return data;
      } catch (error) {
           console.log(error);
           dispatch({
@@ -391,4 +392,84 @@ export const dashboardProductsAction = (queryString, isAdmin) => async (dispatch
                payload: error?.response?.data?.message || "Failed to fetch dashboard products",
           });
      }
+};
+
+export const updateProductFromDashboard =
+  (sendData, toast, reset, setLoader, setOpen, isAdmin) => async (dispatch) => {
+    try {
+      setLoader(true);
+
+       // 🔹 Update API
+       const endpoint = isAdmin ? "/admin/products/" : "/seller/products/";
+       await api.put(`${endpoint}${sendData.id}`, sendData);
+
+      toast.success("Product Update Successful!");
+      setOpen(false);
+      reset();
+
+      // 🔹 Fire and forget (UI refresh)
+      await dispatch(dashboardProductsAction("/admin/products", isAdmin));
+    } catch (error) {
+     alert(error);
+      toast.error(
+        error?.response?.data?.description || "Product update failed."
+      );
+    } finally {
+      setLoader(false);
+    }
+};
+
+export const deleteProduct = 
+     (setLoader, productId, toast, setOpenDeleteModal, isAdmin)=> async (dispatch) => {
+     
+     try {
+          setLoader(true);
+          const endpoint = isAdmin ? "/admin/products/" : "/seller/products/";
+          await api.delete(`${endpoint}${productId}`);
+          toast.success("Product Deleted Successfully.");
+          await dispatch(dashboardProductsAction);
+     } catch (error) {
+          console.log(error);
+          toast.error(
+               error?.response?.data?.message || "Some Error Occured"
+          );
+     } finally {
+          setLoader(false);
+          setOpenDeleteModal(false);
+     }
+};
+
+
+export const updateProductImageFromDashboard = 
+     (formData, productId, toast, setLoader, setOpen, isAdmin) => 
+          async (dispatch) => {
+
+          try {
+               setLoader(true);
+               const endpoint = isAdmin ? "/admin/products/" : "/seller/products/";
+               await api.put(`${endpoint}${productId}/image`, formData);
+               toast.success("Image upload successful");
+               await dispatch(dashboardProductsAction());
+
+          } catch (error) {
+               toast.error(error?.response?.data?.description || "Product Image upload failed");
+          } finally {
+               setLoader(false);
+               setOpen(false);
+          }
+
+}; 
+
+export const createStripePaymentSecret 
+    = (sendData) => async (dispatch) => {
+        try {
+            dispatch({ type: "IS_FETCHING" });
+            const { data } = await api.post("/orders/stripe/client-secret", sendData);
+            dispatch({ type: "CLIENT_SECRET", payload: data });
+            localStorage.setItem("client-secret", JSON.stringify(data));
+            dispatch({ type: "IS_SUCCESS" });
+        } catch (error) {
+            console.log(error);
+            toast.error(error?.response?.data?.message || "Failed to create client secret");
+        }
 };

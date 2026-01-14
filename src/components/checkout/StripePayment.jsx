@@ -1,7 +1,7 @@
-import { Alert, AlertTitle, Skeleton } from '@mui/material'
+import { Skeleton } from '@mui/material'
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
-import React, { useEffect } from 'react'
+import { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import PaymentForm from './PaymentForm';
 import { createStripePaymentSecret } from '../../store/actions';
@@ -14,6 +14,8 @@ const StripePayment = () => {
   const { totalPrice } = useSelector((state) => state.carts);
   const { isLoading, errorMessage } = useSelector((state) => state.errors);
   const { user, selectedUserCheckoutAddress } = useSelector((state) => state.auth);
+
+  console.log(user);
 
   useEffect(() => {
     if (!clientSecret) {
@@ -44,7 +46,13 @@ const StripePayment = () => {
   return (
     <>
       {clientSecret && (
-        <Elements stripe={stripePromise} options={{ clientSecret }}>
+        <Elements 
+            stripe={stripePromise} 
+                options={{
+                  clientSecret: clientSecret, // <- plain string
+                  appearance: { theme: "stripe" },
+                }}
+            >
           <PaymentForm clientSecret={clientSecret} totalPrice={totalPrice} />
         </Elements>
       )}

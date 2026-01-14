@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { MdAddShoppingCart } from "react-icons/md";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import Loader from '../../shared/Loader';
 import { FaBoxOpen } from "react-icons/fa";
 import { adminProductTableColumn } from '../../helper/tableColumn';
@@ -8,6 +8,9 @@ import { DataGrid } from "@mui/x-data-grid";
 import Modal from "../../shared/Modal";
 import ProductForm from "./ProductForm";
 import { useDashboardProductFilter } from "../../../hooks/useDashboardProductFilter";
+import DeleteModal from "../../shared/DeleteModal";
+import { deleteProduct } from "../../../store/actions";
+import ImageUploadForm from "./ImageUploadForm";
 
 const AdminProducts = () => {
   
@@ -30,8 +33,10 @@ const AdminProducts = () => {
   const [currentPage, setCurrentPage] = useState(
       pagination?.pageNumber + 1 || 1
     );
-  
-    useDashboardProductFilter();
+
+  const dispatch = useDispatch();
+
+  useDashboardProductFilter();
  
    const emptyProduct = !products || products?.length ===0;
 
@@ -56,6 +61,7 @@ const AdminProducts = () => {
     const handleDelete = (product) => {
       setSelectedProduct(product);
       setOpenDeleteModal(true);
+      console.log(`Handle Delete : ${product.id}`); 
     };
 
     const handleImageUpload = (product) => {
@@ -74,6 +80,12 @@ const AdminProducts = () => {
       params.set("page", page.toString());
       navigate(`${pathname}?${params}`)
     };
+
+    const onDeleteHandler = () => {
+       console.log(` Selected Handle Delete : ${selectedProduct?.id}`); 
+      dispatch(deleteProduct(setLoader, selectedProduct?.id, toast, setOpenDeleteModal, isAdmin));
+  };
+
 
   return (
     <div>
@@ -141,15 +153,33 @@ const AdminProducts = () => {
       }
 
       <Modal
-      open={openUpdateModal || openAddModal}
-      setOpen={openUpdateModal ? setOpenUpdateModal : setOpenAddModal}
-      title={openUpdateModal ? "Update Product" : "Add Product"}>
-        <ProductForm
-          setOpen={openUpdateModal ? setOpenUpdateModal : setOpenAddModal}
-          product={selectedProduct}
-          update={openUpdateModal}
-          />
-    </Modal>
+        open={openUpdateModal || openAddModal}
+        setOpen={openUpdateModal ? setOpenUpdateModal : setOpenAddModal}
+        title={openUpdateModal ? "Update Product" : "Add Product"}>
+          <ProductForm
+            setOpen={openUpdateModal ? setOpenUpdateModal : setOpenAddModal}
+            product={selectedProduct}
+            update={openUpdateModal}
+            />
+      </Modal>
+
+      <Modal
+        open={openImageUploadModal}
+        setOpen={setOpenImageUploadModal}
+        title="Add Product Image">
+          <ImageUploadForm 
+            setOpen={setOpenImageUploadModal}
+            product={selectedProduct}
+            />
+      </Modal>
+
+      <DeleteModal
+        open={openDeleteModal}
+        setOpen={setOpenDeleteModal}
+        loader={loader}
+        title="Delete Product"
+        onDeleteHandler={onDeleteHandler} 
+      />
 
     </div>
   )
