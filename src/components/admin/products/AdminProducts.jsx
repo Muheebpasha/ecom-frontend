@@ -11,6 +11,9 @@ import { useDashboardProductFilter } from "../../../hooks/useDashboardProductFil
 import DeleteModal from "../../shared/DeleteModal";
 import { deleteProduct } from "../../../store/actions";
 import ImageUploadForm from "./ImageUploadForm";
+import ProductViewModal from "../../shared/ProductViewModal";
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import toast from "react-hot-toast";
 
 const AdminProducts = () => {
   
@@ -19,7 +22,7 @@ const AdminProducts = () => {
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const [openProductViewModal, setOpenProductViewModal] = useState(false);
   const [openImageUploadModal, setOpenImageUploadModal] = useState(false);
-    
+  
   const [loader, setLoader] = useState(false);
   const [openAddModal, setOpenAddModal] = useState(false);
 
@@ -30,10 +33,19 @@ const AdminProducts = () => {
   
   const { isLoading, errorMessage } = useSelector((state) => state.errors);
 
+  const { user } = useSelector((state) => state.auth);
+  const isAdmin = user && user?.roles?.includes("ROLE_ADMIN");
+
   const [currentPage, setCurrentPage] = useState(
       pagination?.pageNumber + 1 || 1
     );
 
+
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const params = new URLSearchParams(searchParams);
+  const pathname = useLocation().pathname;
+  
   const dispatch = useDispatch();
 
   useDashboardProductFilter();
@@ -179,6 +191,12 @@ const AdminProducts = () => {
         loader={loader}
         title="Delete Product"
         onDeleteHandler={onDeleteHandler} 
+      />
+
+      <ProductViewModal 
+        open={openProductViewModal}
+        setOpen={setOpenProductViewModal}
+        product={selectedProduct}        
       />
 
     </div>

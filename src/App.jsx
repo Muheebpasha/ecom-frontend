@@ -17,6 +17,7 @@ import AdminProducts from './components/admin/products/AdminProducts';
 import Sellers from './components/admin/sellers/Sellers';
 import Category from './components/admin/categories/Category';
 import Orders from './components/admin/orders/Orders';
+import PaymentConfirmation from './components/checkout/PaymentConfirmation';
 
 
 function App() {
@@ -34,6 +35,7 @@ function App() {
           <Route path='/cart' element={<Cart />} />
            <Route path='/' element={<PrivateRoute />}>
             <Route path='/checkout' element={ <Checkout />}/>
+            <Route path='/order-confirm' element= {<PaymentConfirmation />} />
           </Route>
           <Route path='/' element={<PrivateRoute publicPage />}>
             <Route path='/login' element={<LogIn />}/>

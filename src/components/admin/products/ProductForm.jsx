@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form';
 import { Button } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
 import toast from 'react-hot-toast';
-import { updateProductFromDashboard, fetchCategories } from '../../../store/actions';
+import { updateProductFromDashboard, fetchCategories, addNewProductFromDashboard } from '../../../store/actions';
 import Spinners from '../../shared/Spinners';
 import ErrorPage from '../../shared/ErrorPage';
 import Skeleton from '../../shared/Skeleton';
@@ -34,6 +34,11 @@ const ProductForm = ({ setOpen, product, update=false}) => {
     const saveProductHandler = (data) => {
             if(!update) {
                 // Create New Product Logic
+                const sendData = {
+                    ...data,
+                    categoryId: selectedCategory.categoryId
+                };
+                dispatch(addNewProductFromDashboard(sendData, toast, setLoader, setOpen, isAdmin));
             } else {
                 const sendData = {
                     ...data,
