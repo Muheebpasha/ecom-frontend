@@ -1,4 +1,4 @@
-import { Avatar, Menu, MenuItem } from '@mui/material';
+import { Avatar, Button, Menu, MenuItem } from '@mui/material';
 import React from 'react'
 import { BiUser } from 'react-icons/bi';
 import { FaShoppingCart, FaUserShield } from 'react-icons/fa';
@@ -6,8 +6,7 @@ import { IoExitOutline } from 'react-icons/io5';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 import BackDrop from './BackDrop';
-import { logoutUser } from '../store/actions';
-
+import { logOutUser } from '../store/actions';
 
 const UserMenu = () => {
     const [anchorEl, setAnchorEl] = React.useState(null);
@@ -15,6 +14,9 @@ const UserMenu = () => {
     const { user } = useSelector((state) => state.auth);
     const dispatch = useDispatch();
     const navigate = useNavigate();
+
+    const isAdmin = user && user?.roles.includes("ROLE_ADMIN");
+    const isSeller = user && user?.roles.includes("ROLE_SELLER");
 
     const handleClick = (event) => {
       setAnchorEl(event.currentTarget);
@@ -24,11 +26,8 @@ const UserMenu = () => {
     };
 
     const logOutHandler = () => {
-        dispatch(logoutUser(navigate));
+        dispatch(logOutUser(navigate));
       };
-
-    const isAdmin = user && user?.roles?.includes("ROLE_ADMIN");
-    const endpoint = isAdmin ? "/admin" : "/seller";
   
     return (
       <div className='relative z-30'>
@@ -36,7 +35,7 @@ const UserMenu = () => {
         className='sm:border sm:border-slate-400 flex flex-row items-center gap-1 rounded-full cursor-pointer hover:shadow-md transition text-slate-700'
           onClick={handleClick}
         >
-          <Avatar alt='Menu'> { user?.username?.charAt(0)?.toUpperCase() } </Avatar>
+          <Avatar alt='Menu' src=''/>
         </div>
         <Menu
           sx={{ width:"400px" }}
@@ -50,7 +49,7 @@ const UserMenu = () => {
           }}
         >
 
-          <Link to={endpoint}>
+          <Link to="/profile">
             <MenuItem className="flex gap-2" 
                 onClick={handleClose}>
                     <BiUser className='text-xl'/>
@@ -60,7 +59,7 @@ const UserMenu = () => {
             </MenuItem>
           </Link>
 
-          <Link to={endpoint + '/orders'}>
+          <Link to="/profile/orders">
             <MenuItem className="flex gap-2" 
                 onClick={handleClose}>
                     <FaShoppingCart className='text-xl'/>
@@ -69,6 +68,17 @@ const UserMenu = () => {
                     </span>
             </MenuItem>
           </Link>
+
+          { (isAdmin || isSeller) && (
+          <Link to={isAdmin ? "/admin" : "/admin/orders"}>
+            <MenuItem className="flex gap-2" 
+                onClick={handleClose}>
+                    <FaUserShield className='text-xl'/>
+                    <span className='font-semibold'>
+                        {isAdmin ? "Admin Panel" : "Seller Panel"}
+                    </span>
+            </MenuItem>
+          </Link> )}
 
             <MenuItem className="flex gap-2" 
                 onClick={logOutHandler}>
@@ -81,7 +91,8 @@ const UserMenu = () => {
             </MenuItem>
 
         </Menu>
-          {open && <BackDrop />}
+
+        {open && <BackDrop />}
       </div>
     );
 }
